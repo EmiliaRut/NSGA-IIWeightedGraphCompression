@@ -1,2 +1,0 @@
-#ignore the Files folder -- as it contains results
-./Files/
