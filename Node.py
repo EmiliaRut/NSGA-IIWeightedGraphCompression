@@ -27,3 +27,6 @@ class Node:
     def absorbAllNodes(self, nodes):
         for n in nodes:
             self.absorbNode(n)
+
+    def getAnyMergedNode(self):
+        return self.mergedNodes[0]
