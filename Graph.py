@@ -87,11 +87,11 @@ class Graph:
         ## First fitness // AbsWeightDiff
         if fit == "SumAbsWeightDiff":
             secWeight = 0
-            originalWeight = 0
+            # originalWeight = 0
             for n in range(originalGraph.getMaxSize()):
                 for e in range(originalGraph.getMaxSize()):
                     secWeight += abs(originalGraph.getGraph()[n].weightOf(e) - self.linkedGraph[n].weightOf(e))
-                    originalWeight += originalGraph.getGraph()[n].weightOf(e)
+                    # originalWeight += originalGraph.getGraph()[n].weightOf(e)
 
         ## Second fitness // SqrWeightDiff
         elif fit == "SqrWeightDiff":
@@ -121,25 +121,106 @@ class Graph:
             print("master == slave in merge")
             return
 
-        self.NODES[slave].updateID(self.NODES[master].getID())
+        masterID = self.NODES[master].getID()
+        self.NODES[slave].updateID(masterID)
+        for node in self.NODES[slave].getMergedNodes():
+            self.NODES[node].updateID(masterID)
 
         #connect slave neighbors (minus master) to master
         slaveNeighbors = Neighbors()
         slaveNeighbors.addAllEdges(self.linkedGraph[slave].getNeighborList())
-        map(slaveNeighbors.removeNode, self.NODES[slave].getMergedNodes())
-        map(slaveNeighbors.removeNode, self.NODES[master].getMergedNodes())
+        for n in self.NODES[master].getMergedNodes():
+            slaveNeighbors.removeNode(n)
+        for n in self.NODES[slave].getMergedNodes():
+            slaveNeighbors.removeNode(n)
         slaveNeighbors.removeNode(master)
         slaveNeighbors.removeNode(slave)
-        map(self.connectSlaveNeighbors, slaveNeighbors.getNeighborList(), repeat(master), repeat(slave))
+        for edge in slaveNeighbors.getNeighborList():
+            # average out the edge weights
+            numOfEdges = 2 + len(self.NODES[slave].getMergedNodes()) + len(self.NODES[master].getMergedNodes())
+            totalWeight = (edge.getWeight() * (1 + len(self.NODES[slave].getMergedNodes()))) + (
+                self.linkedGraph[master].weightOf(edge.getNode()) * (1 + len(self.NODES[master].getMergedNodes())))
+            newEdgeWeight = totalWeight / numOfEdges
+
+            # update weight between edge and slave
+            self.linkedGraph[slave].setWeightOfNode(edge.getNode(), newEdgeWeight)
+            self.linkedGraph[edge.getNode()].setWeightOfNode(slave, newEdgeWeight)
+
+            # update/add weight between edge and master
+            if self.linkedGraph[master].containsNode(edge.getNode()):
+                self.linkedGraph[master].setWeightOfNode(edge.getNode(), newEdgeWeight)
+                self.linkedGraph[edge.getNode()].setWeightOfNode(master, newEdgeWeight)
+            else:
+                self.linkedGraph[master].addNodeWeight(edge.getNode(), newEdgeWeight)
+                self.linkedGraph[edge.getNode()].addNodeWeight(master, newEdgeWeight)
+
+            # update or add weight between all the merged nodes in slave to edge
+            for node in self.NODES[slave].getMergedNodes():
+                if node != edge.getNode():
+                    if self.linkedGraph[edge.getNode()].containsNode(node):
+                        self.linkedGraph[node].setWeightOfNode(edge.getNode(), newEdgeWeight)
+                        self.linkedGraph[edge.getNode()].setWeightOfNode(node, newEdgeWeight)
+                    else:
+                        self.linkedGraph[node].addNodeWeight(edge.getNode(), newEdgeWeight)
+                        self.linkedGraph[edge.getNode()].addNodeWeight(node, newEdgeWeight)
+
+            # update or add weight between all the merged nodes in master to edge
+            for node in self.NODES[master].getMergedNodes():
+                if node != edge.getNode():
+                    if self.linkedGraph[edge.getNode()].containsNode(node):
+                        self.linkedGraph[node].setWeightOfNode(edge.getNode(), newEdgeWeight)
+                        self.linkedGraph[edge.getNode()].setWeightOfNode(node, newEdgeWeight)
+                    else:
+                        self.linkedGraph[node].addNodeWeight(edge.getNode(), newEdgeWeight)
+                        self.linkedGraph
 
         # connect master neighbors (minus slave) to slave
         masterNeighbors = Neighbors()
         masterNeighbors.addAllEdges(self.linkedGraph[master].getNeighborList())
-        map(masterNeighbors.removeNode, self.NODES[master].getMergedNodes())
-        map(masterNeighbors.removeNode, self.NODES[slave].getMergedNodes())
+        for n in self.NODES[master].getMergedNodes():
+            masterNeighbors.removeNode(n)
+        for n in self.NODES[slave].getMergedNodes():
+            masterNeighbors.removeNode(n)
         masterNeighbors.removeNode(master)
         masterNeighbors.removeNode(slave)
-        map(self.connectMasterNeighbors, masterNeighbors.getNeighborList(), repeat(master), repeat(slave))
+        for edge in masterNeighbors.getNeighborList():
+            # average out the edge weights
+            numOfEdges = 2 + len(self.NODES[slave].getMergedNodes()) + len(self.NODES[master].getMergedNodes())
+            totalWeight = (edge.getWeight() * (1 + len(self.NODES[master].getMergedNodes()))) + (
+                self.linkedGraph[slave].weightOf(edge.getNode()) * (1 + len(self.NODES[slave].getMergedNodes())))
+            newEdgeWeight = totalWeight / numOfEdges
+
+            # update weight between edge and master
+            self.linkedGraph[master].setWeightOfNode(edge.getNode(), newEdgeWeight)
+            self.linkedGraph[edge.getNode()].setWeightOfNode(master, newEdgeWeight)
+
+            # update/add weight between edge and slave
+            if self.linkedGraph[slave].containsNode(edge.getNode()):
+                self.linkedGraph[slave].setWeightOfNode(edge.getNode(), newEdgeWeight)
+                self.linkedGraph[edge.getNode()].setWeightOfNode(slave, newEdgeWeight)
+            else:
+                self.linkedGraph[slave].addNodeWeight(edge.getNode(), newEdgeWeight)
+                self.linkedGraph[edge.getNode()].addNodeWeight(slave, newEdgeWeight)
+
+            # update or add weight between all the merged nodes in master to edge
+            for node in self.NODES[master].getMergedNodes():
+                if node != edge.getNode():
+                    if self.linkedGraph[edge.getNode()].containsNode(node):
+                        self.linkedGraph[node].setWeightOfNode(edge.getNode(), newEdgeWeight)
+                        self.linkedGraph[edge.getNode()].setWeightOfNode(node, newEdgeWeight)
+                    else:
+                        self.linkedGraph[node].addNodeWeight(edge.getNode(), newEdgeWeight)
+                        self.linkedGraph[edge.getNode()].addNodeWeight(node, newEdgeWeight)
+
+            # update or add weight between all the merged nodes in slave to edge
+            for node in self.NODES[slave].getMergedNodes():
+                if node != edge.getNode():
+                    if self.linkedGraph[edge.getNode()].containsNode(node):
+                        self.linkedGraph[node].setWeightOfNode(edge.getNode(), newEdgeWeight)
+                        self.linkedGraph[edge.getNode()].setWeightOfNode(node, newEdgeWeight)
+                    else:
+                        self.linkedGraph[node].addNodeWeight(edge.getNode(), newEdgeWeight)
+                        self.linkedGraph[edge.getNode()].addNodeWeight(node, newEdgeWeight)
 
         # add or update an edge with new weight between slave and master
         numOfMasterMergedNodes = 1 + len(self.NODES[master].getMergedNodes())
@@ -148,7 +229,7 @@ class Graph:
         numOfSlaveEdges = (numOfSlaveMergedNodes*(numOfSlaveMergedNodes-1)/2)
         totalNumOfNodes = numOfMasterMergedNodes + numOfSlaveMergedNodes
         numOfTotalEdges = (totalNumOfNodes*(totalNumOfNodes-1)/2)
-        remainingEdges = totalNumOfNodes - numOfSlaveMergedNodes - numOfMasterMergedNodes
+        remainingEdges = numOfTotalEdges - numOfSlaveEdges - numOfMasterEdges
 
         masterEdgeWeight = 0
         if len(self.NODES[master].getMergedNodes()) > 0:
@@ -178,88 +259,11 @@ class Graph:
 
         # add the slave as a merged node of master
         self.NODES[master].absorbNode(slave)
-        map(self.NODES[master].absorbNode, self.NODES[slave].getMergedNodes())
+        for node in self.NODES[slave].getMergedNodes():
+            self.NODES[master].absorbNode(node)
 
         # update size of graph
         self.size -= 1
-
-    def connectSlaveNeighbors(self, edge, master, slave):
-        # average out the edge weights
-        numOfEdges = 2 + len(self.NODES[slave].getMergedNodes()) + len(self.NODES[master].getMergedNodes())
-        totalWeight = (edge.getWeight() * (1 + len(self.NODES[slave].getMergedNodes()))) + (
-        self.linkedGraph[master].weightOf(edge.getNode()) * (1 + len(self.NODES[master].getMergedNodes())))
-        newEdgeWeight = totalWeight / numOfEdges
-
-        # update weight between edge and slave
-        self.linkedGraph[slave].setWeightOfNode(edge.getNode(), newEdgeWeight)
-        self.linkedGraph[edge.getNode()].setWeightOfNode(slave, newEdgeWeight)
-
-        # update/add weight between edge and master
-        if self.linkedGraph[master].containsNode(edge.getNode()):
-            self.linkedGraph[master].setWeightOfNode(edge.getNode(), newEdgeWeight)
-            self.linkedGraph[edge.getNode()].setWeightOfNode(master, newEdgeWeight)
-        else:
-            self.linkedGraph[master].addNodeWeight(edge.getNode(), newEdgeWeight)
-            self.linkedGraph[edge.getNode()].addNodeWeight(master, newEdgeWeight)
-
-        # update or add weight between all the merged nodes in slave to edge
-        for node in self.NODES[slave].getMergedNodes():
-            if node != edge.getNode():
-                if self.linkedGraph[edge.getNode()].containsNode(node):
-                    self.linkedGraph[node].setWeightOfNode(edge.getNode(), newEdgeWeight)
-                    self.linkedGraph[edge.getNode()].setWeightOfNode(node, newEdgeWeight)
-                else:
-                    self.linkedGraph[node].addNodeWeight(edge.getNode(), newEdgeWeight)
-                    self.linkedGraph[edge.getNode()].addNodeWeight(node, newEdgeWeight)
-
-        # update or add weight between all the merged nodes in master to edge
-        for node in self.NODES[master].getMergedNodes():
-            if node != edge.getNode():
-                if self.linkedGraph[edge.getNode()].containsNode(node):
-                    self.linkedGraph[node].setWeightOfNode(edge.getNode(), newEdgeWeight)
-                    self.linkedGraph[edge.getNode()].setWeightOfNode(node, newEdgeWeight)
-                else:
-                    self.linkedGraph[node].addNodeWeight(edge.getNode(), newEdgeWeight)
-                    self.linkedGraph[edge.getNode()].addNodeWeight(node, newEdgeWeight)
-
-    def connectMasterNeighbors(self, edge, master, slave):
-        # average out the edge weights
-        numOfEdges = 2 + len(self.NODES[slave].getMergedNodes()) + len(self.NODES[master].getMergedNodes())
-        totalWeight = (edge.getWeight() * (1 + len(self.NODES[master].getMergedNodes()))) + (
-        self.linkedGraph[slave].weightOf(edge.getNode()) * (1 + len(self.NODES[slave].getMergedNodes())))
-        newEdgeWeight = totalWeight / numOfEdges
-
-        # update weight between edge and master
-        self.linkedGraph[master].setWeightOfNode(edge.getNode(), newEdgeWeight)
-        self.linkedGraph[edge.getNode()].setWeightOfNode(master, newEdgeWeight)
-
-        # update/add weight between edge and slave
-        if self.linkedGraph[slave].containsNode(edge.getNode()):
-            self.linkedGraph[slave].setWeightOfNode(edge.getNode(), newEdgeWeight)
-            self.linkedGraph[edge.getNode()].setWeightOfNode(slave, newEdgeWeight)
-        else:
-            self.linkedGraph[slave].addNodeWeight(edge.getNode(), newEdgeWeight)
-            self.linkedGraph[edge.getNode()].addNodeWeight(slave, newEdgeWeight)
-
-        # update or add weight between all the merged nodes in master to edge
-        for node in self.NODES[master].getMergedNodes():
-            if node != edge.getNode():
-                if self.linkedGraph[edge.getNode()].containsNode(node):
-                    self.linkedGraph[node].setWeightOfNode(edge.getNode(), newEdgeWeight)
-                    self.linkedGraph[edge.getNode()].setWeightOfNode(node, newEdgeWeight)
-                else:
-                    self.linkedGraph[node].addNodeWeight(edge.getNode(), newEdgeWeight)
-                    self.linkedGraph[edge.getNode()].addNodeWeight(node, newEdgeWeight)
-
-        # update or add weight between all the merged nodes in slave to edge
-        for node in self.NODES[slave].getMergedNodes():
-            if node != edge.getNode():
-                if self.linkedGraph[edge.getNode()].containsNode(node):
-                    self.linkedGraph[node].setWeightOfNode(edge.getNode(), newEdgeWeight)
-                    self.linkedGraph[edge.getNode()].setWeightOfNode(node, newEdgeWeight)
-                else:
-                    self.linkedGraph[node].addNodeWeight(edge.getNode(), newEdgeWeight)
-                    self.linkedGraph[edge.getNode()].addNodeWeight(node, newEdgeWeight)
 
     def bfs(self, masterNode, dist):
         # This method will perform breadth first search to get all the neighbors dist edges away

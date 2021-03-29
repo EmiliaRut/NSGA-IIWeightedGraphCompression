@@ -5,6 +5,7 @@ import numpy
 import xlsxwriter
 import time
 import threading
+import os
 
 from deap import base
 from deap import creator
@@ -18,6 +19,10 @@ class GraphCompression:
     OUTPUT_FILES = "./Files/Out/"
 
     def __init__(self, filename):
+        # THREADING OBJECTS #
+        # threading.Thread.__init__(self)
+        # self.name = n
+
         # GRAPH OBJECT #
         self.currentGraph = None
         self.originalGraph = None
@@ -27,7 +32,7 @@ class GraphCompression:
         self.SOURCE = None
         self.MAXGEN = None
         self.POPSIZE = None
-        self.RUNS = None
+        # self.RUNS = None
         self.MUTPB = None
         self.CXPB = None
         self.MAXDIST = None
@@ -38,15 +43,13 @@ class GraphCompression:
         self.worksheet = None
         self.headers = None
         self.row = None
+        self.excelFileName = None
 
         # SAVING INFO TO PRINT TO EXCEL
-        self.globalBestFit = None
-        self.globalBestChrom = None
         self.runBestFit = None
         self.runBestChrom = None
         self.genBestFit = None
         self.genBestChrom = None
-        self.globalWorstFit = None
         self.runWorstFit = None
         self.genWorstFit = None
 
@@ -58,16 +61,16 @@ class GraphCompression:
         self.loadGraph(self.DATA_FILES + self.SOURCE)
         self.printParams()
 
-    def run(self):
-
-        self.row = 0
-        self.createExcel()
-
-        for x in range(int(self.RUNS)):
-            self.main(x)
-
-        # close the workbook
-        self.workbook.close()
+    # def run(self):
+    #
+    #     self.row = 0
+    #     self.createExcel()
+    #
+    #     for x in range(int(self.RUNS)):
+    #         self.main(x)
+    #
+    #     # close the workbook
+    #     self.workbook.close()
 
     def createDEAPtoolbox(self):
         # CREATE THE CLASSES WE NEED IN DEAP
@@ -101,8 +104,8 @@ class GraphCompression:
                 self.OUTPREFIX = line[1].strip()
             if line[0].strip() == "maxDistance":
                 self.MAXDIST = line[1].strip()
-            if line[0].strip() == "runs":
-                self.RUNS = line[1].strip()
+            # if line[0].strip() == "runs":
+            #     self.RUNS = line[1].strip()
             if line[0].strip() == "source":
                 self.SOURCE = line[1].strip()
             if line[0].strip() == "fitness":
@@ -124,7 +127,7 @@ class GraphCompression:
         print("SOURCE = %s" % self.SOURCE)
         print("MAXGEN = %s" % self.MAXGEN)
         print("POPSIZE = %s" % self.POPSIZE)
-        print("RUNS = %s" % self.RUNS)
+        # print("RUNS = %s" % self.RUNS)
         print("MUTPB = %s" % self.MUTPB)
         print("CXPB = %s" % self.CXPB)
         print("MAXDIST = %s" % self.MAXDIST)
@@ -133,20 +136,21 @@ class GraphCompression:
         print("-------- PARAMETERS -----------")
 
     def createExcel(self):
-        self.workbook = xlsxwriter.Workbook(
-            self.OUTPUT_FILES + self.OUTPREFIX + "_" + self.FITNESS + "_dst" + self.MAXDIST + "_POPSIZE" + self.POPSIZE +
-            "_mut" + self.MUTPB + "_xvr" + self.CXPB + "_run" + self.RUNS + "_gen" + self.MAXGEN + ".xlsx")
+        self.excelFileName = threading.current_thread().name + "_" + self.OUTPREFIX + "_" + self.FITNESS + "_dst" + self.MAXDIST + "_pop" + self.POPSIZE + "_mut" + self.MUTPB + "_xvr" + self.CXPB + "_gen" + self.MAXGEN + ".xlsx"
+        self.workbook = xlsxwriter.Workbook(self.OUTPUT_FILES + self.excelFileName)
         self.worksheet = self.workbook.add_worksheet()
 
         # write the headers in the worksheet
         self.headers = ["Graph Size", "Population Size", "Chromosome Size", "Mutation Rate", "Crossover Rate",
-                        "Maximum Distance", "Run", "Max Generation", "Current Generation", "Time to Complete (s)",
-                        "Global Best", "Global Worst", "Run Best", "Run Worst", "Generation Best", "Generation Worst",
-                        "Global Best Chrom", "Run Best Chrom", "Generation Best Chrom"]
+                        "Maximum Distance", "Max Generation", "Current Generation", "Time to Complete (s)",
+                        "Run Best", "Run Worst", "Generation Best", "Generation Worst",
+                        "Run Best Chrom", "Generation Best Chrom"]
         for x in range(len(self.headers)):
             self.worksheet.write(self.row, x, self.headers[x])
 
-    def main(self, x):
+    def run(self):
+        self.row = 0
+        self.createExcel()
         info = {}
 
         # initialize the population
@@ -165,11 +169,11 @@ class GraphCompression:
 
         # initialize the generation counter
         g = 0
-
-        if self.runBestChrom is None:
-            self.globalBestChrom = tools.selBest(pop, 1)[0]
-            self.globalBestFit = self.globalBestChrom.fitness.values
-            self.globalWorstFit = tools.selWorst(pop, 1)[0].fitness.values
+        #
+        # if self.runBestChrom is None:
+        #     self.globalBestChrom = tools.selBest(pop, 1)[0]
+        #     self.globalBestFit = self.globalBestChrom.fitness.values
+        #     self.globalWorstFit = tools.selWorst(pop, 1)[0].fitness.values
 
         self.runBestChrom = tools.selBest(pop, 1)[0]
         self.runBestFit = self.runBestChrom.fitness.values
@@ -185,23 +189,20 @@ class GraphCompression:
         info['Mutation Rate'] = self.MUTPB
         info['Crossover Rate'] = self.CXPB
         info['Maximum Distance'] = self.MAXDIST
-        info['Run'] = x
+        # info['Run'] = x
         info['Max Generation'] = self.MAXGEN
         info['Current Generation'] = g
         info['Time to Complete (s)'] = "TBD"
-        info['Global Best'] = self.globalBestFit
-        info['Global Worst'] = self.globalWorstFit
         info['Run Best'] = self.runBestFit
         info['Run Worst'] = self.runWorstFit
         info['Generation Best'] = self.genBestFit
         info['Generation Worst'] = self.genWorstFit
-        info['Global Best Chrom'] = self.globalBestChrom
         info['Run Best Chrom'] = self.runBestChrom
         info['Generation Best Chrom'] = self.genBestChrom
 
         self.printToExcel(info)
 
-        self.createGraph(pop, x, g)
+        self.createGraph(pop, g)
 
         # evolve
         while g < int(self.MAXGEN):
@@ -209,7 +210,8 @@ class GraphCompression:
             info = {}
             g = g + 1  # increment the generation number
             print("-------------------------------------------------------")
-            print(str(threading.current_thread().name) + " Run " + str(x) + " Generation " + str(g))
+            # print(str(threading.current_thread().name) + " Run " + str(x) + " Generation " + str(g))
+            print(str(threading.current_thread().name) + " Generation " + str(g))
             print("-------------------------------------------------------")
 
             # Vary the population
@@ -251,14 +253,9 @@ class GraphCompression:
             if self.genBestFit < self.runBestFit:
                 self.runBestChrom = self.genBestChrom
                 self.runBestFit = self.runBestChrom.fitness.values
-                if self.runBestFit < self.globalBestFit:
-                    self.globalBestChrom = self.runBestChrom
-                    self.globalBestFit = self.runBestFit
 
             if self.genWorstFit > self.runWorstFit:
                 self.runWorstFit = self.genWorstFit
-                if self.runWorstFit > self.globalWorstFit:
-                    self.globalWorstFit = self.runWorstFit
 
             info['Graph Size'] = self.originalGraph.getMaxSize()
             info['Population Size'] = len(pop)
@@ -266,23 +263,31 @@ class GraphCompression:
             info['Mutation Rate'] = self.MUTPB
             info['Crossover Rate'] = self.CXPB
             info['Maximum Distance'] = self.MAXDIST
-            info['Run'] = x
+            # info['Run'] = x
             info['Max Generation'] = self.MAXGEN
             info['Current Generation'] = g
             info['Time to Complete (s)'] = end - start
-            info['Global Best'] = self.globalBestFit
-            info['Global Worst'] = self.globalWorstFit
             info['Run Best'] = self.runBestFit
             info['Run Worst'] = self.runWorstFit
             info['Generation Best'] = self.genBestFit
             info['Generation Worst'] = self.genWorstFit
-            info['Global Best Chrom'] = self.globalBestChrom
             info['Run Best Chrom'] = self.runBestChrom
             info['Generation Best Chrom'] = self.genBestChrom
             self.printToExcel(info)
 
             if int(g) % (int(self.MAXGEN) / 10) == 0:
-                self.createGraph(pop, x, g)
+                self.createGraph(pop, g)
+
+        self.printPopToExcel(pop)
+
+        # close the workbook
+        self.workbook.close()
+
+        # rename the excel so that it includes the best fitness from the run
+        currentFile = self.OUTPUT_FILES + self.excelFileName
+        futureFile = str(self.runBestFit) + "_" + self.excelFileName
+        os.rename(currentFile, self.OUTPUT_FILES + futureFile)
+
 
     def initChrom(self, chromCls):
         # This method will initialize a chromosome (merges)
@@ -361,12 +366,23 @@ class GraphCompression:
     def duplicateGene(self, chrom, gene):
         duplicate = False
         for g in chrom:
-            if g[0] == gene[0] and g[1] == gene[1]:
+            if g[0] in gene and g[1] in gene:
+            # if g[0] == gene[0] and g[1] == gene[1]:
                 if duplicate:
                     return True
                 else:
                     duplicate = True
         return False
+
+    def printPopToExcel(self, p):
+        r = 0
+        for chrom in p:
+            r += 1
+            chromString = ""
+            for x in range(len(chrom)):
+                chromString += "[" + str(chrom[x][0]) + ", " + str(chrom[x][1]) + "], "
+            self.worksheet.write(r, 75, chromString)
+            self.worksheet.write(r, 74, str(chrom.fitness.values))
 
     def printPop(self, p):
         print("------ Population ------")
@@ -387,17 +403,17 @@ class GraphCompression:
         for x in range(len(info)):
             self.worksheet.write(self.row, x, str(info[self.headers[x]]))
 
-    def createGraph(self, pop, run, gen):
+    def createGraph(self, pop, gen):
         chart = self.workbook.add_chart({'type': 'scatter'})
         chart.set_y_axis({'name': 'compression rate'})
         chart.set_x_axis({'name': self.FITNESS})
         chart.set_title({'name': 'Pareto 1 Front'})
 
         #write down population data in Column AA
-        x_start_loc = [(len(pop)-1)*run, 26+gen]
-        x_end_loc = [(len(pop)-1)*(run+1), 26+gen]
-        y_start_loc = [(len(pop)-1)*run, 27+gen]
-        y_end_loc = [(len(pop)-1)*(run+1), 27+gen]
+        x_start_loc = [0, 26 + gen]
+        x_end_loc = [(len(pop)-1), 26 + gen]
+        y_start_loc = [0, 27 + gen]
+        y_end_loc = [(len(pop)-1), 27 + gen]
         self.worksheet.write_column(*x_start_loc, data=[chrom.fitness.values[0] for chrom in pop])
         self.worksheet.write_column(*y_start_loc, data=[chrom.fitness.values[1] for chrom in pop])
 
