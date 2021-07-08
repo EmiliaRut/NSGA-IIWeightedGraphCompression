@@ -44,7 +44,7 @@ Changing the length of the chromosome
 	-------------------------------------------------------------------				-----------------------------------------------------------------
 > July 7 (Original, SumAbsWeightDiff, original emo/tournament method):				> July 7 (Original, SumSqrWeightDiff, original emo/tournament method):
 	-> **GA BEST: comp rate of 40% = 3752.96**							-> **GA BEST: comp rate 40% = 117.44**
-	-> 0-100 compression,  40 gen: comp rate of 40.1709402% = 14144.04289				-> 0-100 compression,  40 gen: comp rate of **running**
+	-> 0-100 compression,  40 gen: comp rate of 40.1709402% = 14144.04289				-> 0-100 compression,  40 gen: comp rate of 37.6068376% = 423.1077913
 	----------------------------------------------------------------------				-----------------------------------------------------------------
 	-> 30-70 compression,  40 gen: comp rate of 40.1709402% = 10801.63683				-> 30-70 compression,  40 gen: comp rate of 41.8803419% = 360.2416774
 	-> 30-70 compression, 150 gen: comp rate of 39.7435897% = 6865.558794
@@ -52,7 +52,7 @@ Changing the length of the chromosome
 	----------------------------------------------------------------------				----------------------------------------------------------------------
 > July 15 (Original, SumAbsWeightDiff, original emo/tournament method):				>July 15 (Original, SqrWeightDiff, original emo/tournament method):
 	-> **GA BEST: comp rate of 40% = 8609.13**								-> **GA BEST: comp rate: 40% = 178.41**
-	-> 0-100 compression,  40 gen: comp rate of **running**						-> 0-100 compression,  40 gen: comp rate of **running**
+	-> 0-100 compression,  40 gen: comp rate of **running&sandcastle**						-> 0-100 compression,  40 gen: comp rate of **running&sandcastle**
 	----------------------------------------------------------------------				----------------------------------------------------------------
 	-> 30-70 compression,  40 gen: comp rate of 40.9756098% = 24421.44565				-> 30-70 compression,  40 gen: comp rate of 40.7317073% = 484.9353591
 	-> 30-70 compression, 250 gen: comp rate of **sandcastle**					-> 30-70 compression, 250 gen: comp rate of **sandcastle**
