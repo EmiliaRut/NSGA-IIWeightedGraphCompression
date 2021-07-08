@@ -14,10 +14,10 @@ def runGA(g):
 if __name__ == "__main__":
     # VARIABLES
     MAX_THREADS = 1
-    FIRST_TEST = 1
-    LAST_TEST = 1
+    FIRST_TEST = 2
+    LAST_TEST = 2
     RUNS = 1
-    TESTS = ["July15_?.dat"]
+    TESTS = ["July7_?.dat"]
 
     threads = [None] * MAX_THREADS
     GAs = Queue()

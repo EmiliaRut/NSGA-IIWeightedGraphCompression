@@ -291,7 +291,7 @@ class GraphCompression:
 
     def initChrom(self, chromCls):
         # This method will initialize a chromosome (merges)
-        randSize = random.randint(1,self.originalGraph.getMaxSize()-1)
+        randSize = random.randint(int(self.originalGraph.getMaxSize()*0.3),int(self.originalGraph.getMaxSize()*0.7))
         chrom = [None] * randSize
         for x in range(randSize):
             chrom[x] = [None] * 2
@@ -381,8 +381,8 @@ class GraphCompression:
             chromString = ""
             for x in range(len(chrom)):
                 chromString += "[" + str(chrom[x][0]) + ", " + str(chrom[x][1]) + "], "
-            self.worksheet.write(r, 75, chromString)
-            self.worksheet.write(r, 74, str(chrom.fitness.values))
+            self.worksheet.write(r, 441, chromString) #75 for 40 gens
+            self.worksheet.write(r, 440, str(chrom.fitness.values)) #74 for 40 gens
 
     def printPop(self, p):
         print("------ Population ------")

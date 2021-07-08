@@ -1,0 +1,68 @@
+Any changes we made to the code (ie processes) and why
+> tournament selection: previously we made changes to the tournament selection in an effort to reduce the number of duplicate chromosomes
+> but this is not mute because there were errors in the way the edge weights were re-calculated
+
+
+Duplicate Chromosomes
+> After unmapping the neighbors, and changing the IDs of the merged nodes, I was finally able to get the NSGA-II chromosomes to produce the same fitness values as the Java GA.
+> Changed emo method vs original emo method
+	-> pretty much equal in terms of unique chromosomes.
+	-> The Pareto graph is also pretty similar
+	-> changed emo results (June2, Original, SumAbsWeightDiff): comp rate of 38.75% = 1039.079365
+	-> original emo results (June2, Original, SumAbsWeightDiff): comp rate of 41.25% = 1047.822222
+> These results are still way off the global best from the Java GA (June2, Original, SumAbsWeightDiff): comp rate of 40% = 256.17
+> However, a lot of chromosomes are still going into one of the extremes (ie. comp rate of 98.75% with fitness of 6226.703)
+
+
+Changing the length of the chromosome
+> Since the results are not as promising as the Java GA (and we were expecting better), we are hoping that concentrating the efforts of the NSGA-II to a smaller compression rate range would aid the results
+> June 2 (Original, SumAbsWeightDiff, original emo/tournament method):				>June 2 (Original, SqrWeightDiff, original emo/tournament method):
+	-> **GA BEST: comp rate of 40% = 256.17**							-> **GA BEST: comp rate of 40% = 26.84**
+      	-> 0-100 compression,  40 gen: comp rate of 41.25% = 1047.822222				-> 0-100 compression,  40 gen: comp rate of 37.5% = 70.59815862
+	-------------------------------------------------------------------				-----------------------------------------------------------------
+      	-> 30-70 compression,  40 gen: comp rate of 41.25% = 677.8571					-> 30-70 compression,  40 gen: comp rate of 40.00% = 53.09122876
+      	-> 30-70 compression,  50 gen: comp rate of 41.25% = 684.9333					
+      	-> 30-70 compression, 100 gen: comp rate of 38.75% = 262.1667					-> 30-70 compression, 100 gen: comp rate of 38.75% = 39.18758307
+      	-> 30-70 compression, 150 gen: comp rate of 38.75% = 296.5					-> 30-70 compression, 150 gen: comp rate of 41.25% = 35.25904139
+	-------------------------------------------------------------------				-----------------------------------------------------------------
+	-> 35-45 compression,  40 gen: comp rate of 40.00% = 554.0547619
+	-> 35-45 compression, 250 gen: comp rate of 38.75% = 284.2
+	-------------------------------------------------------------------
+	-> 10-90 compression, 150 gen: comp rate of 38.75% = 678.4666667
+		**but can see a curve**
+	-------------------------------------------------------------------
+> Apr 28 (Original, SumAbsWeightDiff, original emo/tournament method):				> Apr 28 (Original, SqrWeightDiff, original emo/tournament method):
+	-> **GA BEST: comp rate of 40% = 1744.21**							-> **GA BEST: comp rate 40% = 62.77**
+	-> 0-100 compression,  40 gen: comp rate of 41.00% = 7222.048052				-> 0-100 compression,  40 gen: comp rate of 42.50% = 345.3227034
+	-------------------------------------------------------------------				-----------------------------------------------------------------
+	-> 30-70 compression,  40 gen: comp rate of 40.00% = 6204.781343				-> 30-70 compression,  40 gen: comp rate of 40.50% = 270.0717203
+
+	-> 30-70 compression, 150 gen: comp rate of 40.00% = 3337.894444
+	-> 30-70 compression, 200 gen: comp rate of 40.00% = 2510.310823
+	-> 30-70 compression, 250 gen: comp rate of 40.00% = 2576.596176				-> 30-70 compression, 250 gen: comp rate of 40.00% = 119.7822531
+													-> 30-70 compression, 300 gen: comp rate of 42.00% = 152.1385322 and 37.00% = 116.5079158
+	-------------------------------------------------------------------				-----------------------------------------------------------------
+> July 7 (Original, SumAbsWeightDiff, original emo/tournament method):				> July 7 (Original, SumSqrWeightDiff, original emo/tournament method):
+	-> **GA BEST: comp rate of 40% = 3752.96**							-> **GA BEST: comp rate 40% = 117.44**
+	-> 0-100 compression,  40 gen: comp rate of 40.1709402% = 14144.04289				-> 0-100 compression,  40 gen: comp rate of **running**
+	----------------------------------------------------------------------				-----------------------------------------------------------------
+	-> 30-70 compression,  40 gen: comp rate of 40.1709402% = 10801.63683				-> 30-70 compression,  40 gen: comp rate of 41.8803419% = 360.2416774
+	-> 30-70 compression, 150 gen: comp rate of 39.7435897% = 6865.558794
+	-> 30-70 compression, 250 gen: comp rate of 38.4615385% = 4726.931746				-> 30-70 compression, 250 gen: comp rate of 38.8888889% = 208.3514712
+	----------------------------------------------------------------------				----------------------------------------------------------------------
+> July 15 (Original, SumAbsWeightDiff, original emo/tournament method):				>July 15 (Original, SqrWeightDiff, original emo/tournament method):
+	-> **GA BEST: comp rate of 40% = 8609.13**								-> **GA BEST: comp rate: 40% = 178.41**
+	-> 0-100 compression,  40 gen: comp rate of **running**						-> 0-100 compression,  40 gen: comp rate of **running**
+	----------------------------------------------------------------------				----------------------------------------------------------------
+	-> 30-70 compression,  40 gen: comp rate of 40.9756098% = 24421.44565				-> 30-70 compression,  40 gen: comp rate of 40.7317073% = 484.9353591
+	-> 30-70 compression, 250 gen: comp rate of **sandcastle**					-> 30-70 compression, 250 gen: comp rate of **sandcastle**
+	----------------------------------------------------------------------				----------------------------------------------------------------
+>Note that further restricting the compression range made the GA run faster
+
+How to compare two chromosomes together
+> get their cliques and compare them (same way as CEC 2021 Paper) using Adjusted Rand Index
+
+
+
+Future:
+> Try on bigger (biological) datasets
